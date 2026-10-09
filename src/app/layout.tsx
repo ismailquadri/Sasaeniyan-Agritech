@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Sora, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import "@/components/ios/ios.css";
+import "@/components/iphone/iphone.css";
 
 const sora = Sora({
   variable: "--font-sora",
