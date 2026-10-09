@@ -1,0 +1,36 @@
+{
+  "name": "sasaeniyan-agritech",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force && npm run seed"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.10.0",
+    "next": "16.4.0",
+    "prisma": "^8.0.0-rc.22",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.0.3"
+  }
+}

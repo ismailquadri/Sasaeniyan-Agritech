@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    container_name: sasaeniyan-db
+    environment:
+      POSTGRES_USER: sasa
+      POSTGRES_PASSWORD: sasa
+      POSTGRES_DB: sasaeniyan
+    ports:
+      - "5432:5432"
+    volumes:
+      - sasa_pg:/var/lib/postgresql/data
+volumes:
+  sasa_pg: {}
