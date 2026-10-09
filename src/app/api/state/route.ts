@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 // Aggregate snapshot for dashboards + the polling fallback.
 export async function GET() {
-  const [farmers, agents, buyers, contracts, lots, orders, wallets, messages, marketIndex] =
+  const [farmers, agents, buyers, contracts, lots, orders, wallets, messages, marketIndex, events] =
     await Promise.all([
       db.farmer.findMany({ orderBy: { name: 'asc' } }),
       db.agent.findMany(),
@@ -21,7 +21,8 @@ export async function GET() {
       db.wallet.findMany(),
       db.message.findMany({ orderBy: { createdAt: 'desc' }, take: 50 }),
       db.marketIndex.findMany(),
+      db.event.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }),
     ])
 
-  return Response.json({ farmers, agents, buyers, contracts, lots, orders, wallets, messages, marketIndex })
+  return Response.json({ farmers, agents, buyers, contracts, lots, orders, wallets, messages, marketIndex, events })
 }

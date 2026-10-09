@@ -1,0 +1,13 @@
+{
+  "name": "Sasaeniyan Agent",
+  "short_name": "Sasaeniyan",
+  "description": "Field agent app — enrol farmers, grade and aggregate lots.",
+  "start_url": "/agent",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbf8f1",
+  "theme_color": "#2e6b3e",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

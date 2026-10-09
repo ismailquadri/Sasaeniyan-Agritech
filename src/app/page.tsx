@@ -1,69 +1,82 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { Smartphone, Tractor, Building2, LineChart, ArrowRight, Sprout } from 'lucide-react'
+
+const surfaces = [
+  {
+    href: '/phone',
+    label: 'Farmer',
+    persona: 'Musa & Hauwa · USSD + SMS',
+    desc: 'Feature-phone USSD in Hausa. Sell harvest, hear a transparent fair price, get paid by SMS.',
+    Icon: Smartphone,
+    tone: 'from-brand to-brand-dark',
+  },
+  {
+    href: '/agent',
+    label: 'Agent',
+    persona: 'Ibrahim · Field PWA',
+    desc: 'Register farmers, enrol them to contracts with an input advance, grade and aggregate lots.',
+    Icon: Tractor,
+    tone: 'from-clay to-[#8f3f1e]',
+  },
+  {
+    href: '/buyer',
+    label: 'Buyer',
+    persona: 'Mrs. Okafor · Northern Foods Ltd',
+    desc: 'Post forward demand, watch supply fill live with traceable graded lots, fund escrow on delivery.',
+    Icon: Building2,
+    tone: 'from-gold to-[#b4811f]',
+  },
+  {
+    href: '/admin',
+    label: 'Presenter',
+    persona: 'Impact & controls',
+    desc: 'Income uplift, loss avoided, GMV and revenue split — plus one-click demo reset.',
+    Icon: LineChart,
+    tone: 'from-[#334155] to-[#1e293b]',
+  },
+]
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="mx-auto max-w-5xl px-5 py-12 sm:py-16">
+      <header className="mb-10 text-center">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-sm font-semibold text-brand-dark">
+          <Sprout className="size-4" /> Sasaeniyan Agritech
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          Demand-first offtake &amp; <span className="text-brand">embedded finance</span>
+          <br className="hidden sm:block" /> for Northern-Nigeria smallholders
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-base text-muted sm:text-lg">
+          One live loop across three real users. Open the surfaces side by side — every action syncs
+          across screens in real time.
+        </p>
+      </header>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {surfaces.map(({ href, label, persona, desc, Icon, tone }) => (
+          <Link
+            key={href}
+            href={href}
+            className="group relative overflow-hidden rounded-2xl border border-line bg-surface p-6 shadow-sm shadow-black/[0.03] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+            <div className="flex items-start justify-between">
+              <div className={`flex size-12 items-center justify-center rounded-xl bg-gradient-to-br ${tone} text-white`}>
+                <Icon className="size-6" />
+              </div>
+              <ArrowRight className="size-5 text-muted transition-transform duration-200 group-hover:translate-x-1 group-hover:text-brand" />
+            </div>
+            <h2 className="mt-4 font-display text-xl font-bold">{label}</h2>
+            <p className="text-sm font-semibold text-gold">{persona}</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{desc}</p>
+          </Link>
+        ))}
+      </div>
+
+      <p className="mt-10 text-center text-xs text-muted">
+        Demo build · USSD, payments and NDFR verification are simulated and clearly labeled ·
+        Production via Africa&apos;s Talking + licensed PSP
+      </p>
+    </main>
+  )
 }
