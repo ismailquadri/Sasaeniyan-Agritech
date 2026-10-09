@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Classic dynamic rendering: SSE streaming + live DB reads per request.
+  // (cacheComponents/dynamicIO conflicts with `export const dynamic` on SSE routes.)
   turbopack: {
     rules: {
       "*.css": {
