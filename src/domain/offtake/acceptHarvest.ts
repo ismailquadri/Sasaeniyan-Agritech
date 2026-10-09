@@ -84,6 +84,10 @@ export async function acceptHarvest(
     ],
   })
 
-  publish({ type: 'HARVEST_ACCEPTED', payload: { farmerId: pc.farmer.id, crop: input.crop, baskets: input.baskets } })
+  // Persist the event deterministically via the injected db, then fan out
+  // over SSE without the hub's own (global-db, fire-and-forget) audit write.
+  const payload = { farmerId: pc.farmer.id, crop: input.crop, baskets: input.baskets }
+  await db.event.create({ data: { type: 'HARVEST_ACCEPTED', payload } })
+  publish({ type: 'HARVEST_ACCEPTED', payload }, { persist: false })
   return { lot, price: pc.price, index: pc.index.indexPrice, farmer: pc.farmer }
 }

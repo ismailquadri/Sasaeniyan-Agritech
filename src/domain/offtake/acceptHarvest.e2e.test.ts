@@ -34,16 +34,13 @@ const RUN = process.env.RUN_E2E === '1'
     const sms = await db.message.findMany({ where: { toPhone: '+2348030000010', channel: 'SMS' } })
     expect(sms.length).toBe(2) // priceOffer + confirmPickup
 
-    let event = await db.event.findFirst({ where: { type: 'HARVEST_ACCEPTED' } })
-    for (let i = 0; i < 10 && !event; i++) {
-      await new Promise((r) => setTimeout(r, 50))
-      event = await db.event.findFirst({ where: { type: 'HARVEST_ACCEPTED' } })
-    }
+    const event = await db.event.findFirst({ where: { type: 'HARVEST_ACCEPTED' } })
     expect(event).toBeTruthy()
 
     // Unknown crop → null, no lot created
     const none = await acceptHarvest(db, { farmerId: IDS.musa, crop: 'maize', baskets: 5 })
     expect(none).toBeNull()
+    expect(await db.lot.count()).toBe(1)
 
     await db.$disconnect()
   })
