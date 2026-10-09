@@ -102,7 +102,9 @@ button.ios-row:active { background: #d1d1d6; }
 /* Tab bar */
 .ios-tabbar {
   position: absolute; left: 0; right: 0; bottom: 0; height: 84px;
-  background: rgba(249, 249, 249, 0.92); backdrop-filter: blur(16px);
+  background: rgba(249, 249, 249, 0.92);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border-top: 0.5px solid var(--ios-sep);
   display: flex; padding: 6px 8px 0;
 }
@@ -173,4 +175,3 @@ button.ios-row:active { background: #d1d1d6; }
 .ios-empty { text-align: center; padding: 56px 24px; color: var(--ios-label2); }
 .ios-empty h3 { font-size: 17px; font-weight: 600; color: var(--ios-label); margin: 10px 0 4px; }
 .ios-empty p { font-size: 14px; margin: 0; line-height: 1.4; }
-.tnum { font-variant-numeric: tabular-nums; }

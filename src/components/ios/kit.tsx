@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { IconChevron } from './icons'
+import { IconChevron, IconCheck } from './icons'
 
 export function NavLargeTitle({ title, trailing }: { title: string; trailing?: ReactNode }) {
   return (
@@ -48,9 +48,11 @@ export function Row({
   onClick?: () => void
   trailing?: ReactNode
 }) {
-  const Tag: any = onClick ? 'button' : 'div'
+  if (process.env.NODE_ENV !== 'production' && onClick && trailing)
+    console.warn('Row: avoid onClick together with interactive trailing content (nested buttons)')
+  const Tag: 'button' | 'div' = onClick ? 'button' : 'div'
   return (
-    <Tag className="ios-row" onClick={onClick} type={onClick ? 'button' : undefined}>
+    <Tag className="ios-row" {...(onClick ? { onClick, type: 'button' as const } : {})}>
       {icon ? <span className="ios-iconsq" style={{ background: iconBg ?? 'var(--ios-tint)' }}>{icon}</span> : null}
       <span className="ios-rowbody">
         <span className="ios-rowtitle">{title}</span>
@@ -59,7 +61,7 @@ export function Row({
       {struckValue ? <span className="ios-rowvalue struck">{struckValue}</span> : null}
       {value ? <span className="ios-rowvalue strong">{value}</span> : null}
       {trailing}
-      {selected ? <span style={{ color: 'var(--ios-tint)' }}>✓</span> : null}
+      {selected ? <IconCheck width={18} height={18} style={{ color: 'var(--ios-tint)' }} /> : null}
       {chevron ? <IconChevron className="ios-chevron" /> : null}
     </Tag>
   )
@@ -106,13 +108,12 @@ export function TabBar({ items, active, onChange }: { items: TabItem[]; active: 
           type="button"
           className={`ios-tab${t.key === active ? ' active' : ''}`}
           onClick={() => onChange(t.key)}
-          aria-label={t.label}
+          aria-current={t.key === active ? 'page' : undefined}
         >
           {t.icon}
           <span>{t.label}</span>
         </button>
       ))}
-      <span className="ios-homeindicator" />
     </nav>
   )
 }
@@ -132,9 +133,9 @@ export function Sheet({ open, onClose, children }: { open: boolean; onClose: () 
 
 export function Segmented({ options, value, onChange }: { options: { key: string; label: string }[]; value: string; onChange: (k: string) => void }) {
   return (
-    <div className="ios-seg" role="tablist">
+    <div className="ios-seg" role="radiogroup">
       {options.map((o) => (
-        <button key={o.key} type="button" className={o.key === value ? 'active' : ''} onClick={() => onChange(o.key)}>
+        <button key={o.key} type="button" className={o.key === value ? 'active' : ''} aria-pressed={o.key === value} onClick={() => onChange(o.key)}>
           {o.label}
         </button>
       ))}
@@ -146,7 +147,7 @@ export function Stepper({ value, onChange, min = 1, max = 999, step = 1 }: { val
   return (
     <div className="ios-stepper">
       <button type="button" aria-label="Decrease" disabled={value <= min} onClick={() => onChange(Math.max(min, value - step))}>−</button>
-      <span className="val">{value.toLocaleString()}</span>
+      <span className="val">{value.toLocaleString('en-NG')}</span>
       <button type="button" aria-label="Increase" disabled={value >= max} onClick={() => onChange(Math.min(max, value + step))}>+</button>
     </div>
   )

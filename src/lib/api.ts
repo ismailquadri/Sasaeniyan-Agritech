@@ -4,5 +4,7 @@ export async function call(url: string, method: 'POST' | 'PATCH', body: unknown)
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
   })
-  return res.json()
+  const data = await res.json().catch(() => null)
+  if (!res.ok) return data ?? { error: `${method} ${url} → ${res.status}` }
+  return data ?? {}
 }

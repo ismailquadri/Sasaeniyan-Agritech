@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useLayoutEffect, useState, type ReactNode } from 'react'
 import { IconSignal, IconWifi, IconBattery } from '@/components/ios/icons'
 
 const CHASSIS_W = 421
@@ -8,7 +8,7 @@ const CHASSIS_H = 886
 
 function useFrameScale() {
   const [scale, setScale] = useState(0.8)
-  useEffect(() => {
+  useLayoutEffect(() => {
     const fit = () =>
       setScale(Math.min(1, (window.innerHeight * 0.88) / CHASSIS_H, (window.innerWidth * 0.92) / CHASSIS_W))
     fit()
@@ -36,6 +36,7 @@ export function IPhoneFrame({ children, caption }: { children: ReactNode; captio
               </span>
             </div>
             {children}
+            <span className="ios-homeindicator" />
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import type { SVGProps } from 'react'
 const base = (p: SVGProps<SVGSVGElement>) => ({
   width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none' as const,
   stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+  'aria-hidden': true,
   ...p,
 })
 
@@ -50,13 +51,13 @@ export const IconShield = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}><path d="M12 3 5 6v5c0 5 3.2 8.4 7 10 3.8-1.6 7-5 7-10V6z" /><path d="m9 11.5 2 2 4-4.5" /></svg>
 )
 export const IconSignal = () => (
-  <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1" /><rect x="5" y="5.5" width="3" height="6.5" rx="1" /><rect x="10" y="3" width="3" height="9" rx="1" /><rect x="15" y="0.5" width="3" height="11.5" rx="1" /></svg>
+  <svg aria-hidden width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1" /><rect x="5" y="5.5" width="3" height="6.5" rx="1" /><rect x="10" y="3" width="3" height="9" rx="1" /><rect x="15" y="0.5" width="3" height="11.5" rx="1" /></svg>
 )
 export const IconWifi = () => (
-  <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M1.5 4.2a10.5 10.5 0 0 1 14 0M4 7a7 7 0 0 1 9 0M6.5 9.6a3.5 3.5 0 0 1 4 0" /><circle cx="8.5" cy="11" r="0.8" fill="currentColor" stroke="none" /></svg>
+  <svg aria-hidden width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M1.5 4.2a10.5 10.5 0 0 1 14 0M4 7a7 7 0 0 1 9 0M6.5 9.6a3.5 3.5 0 0 1 4 0" /><circle cx="8.5" cy="11" r="0.8" fill="currentColor" stroke="none" /></svg>
 )
 export const IconBattery = () => (
-  <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x="0.5" y="0.5" width="22" height="12" rx="3.5" stroke="currentColor" opacity="0.4" /><rect x="2" y="2" width="16" height="9" rx="2" fill="currentColor" /><path d="M24.5 4.5v4a2.2 2.2 0 0 0 0-4Z" fill="currentColor" opacity="0.4" /></svg>
+  <svg aria-hidden width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x="0.5" y="0.5" width="22" height="12" rx="3.5" stroke="currentColor" opacity="0.4" /><rect x="2" y="2" width="16" height="9" rx="2" fill="currentColor" /><path d="M24.5 4.5v4a2.2 2.2 0 0 0 0-4Z" fill="currentColor" opacity="0.4" /></svg>
 )
 
 /** Crop glyph + its iOS icon-square color. */
