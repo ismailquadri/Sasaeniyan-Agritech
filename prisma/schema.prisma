@@ -1,0 +1,162 @@
+// Sasaeniyan Agritech — demo data model (spec §3)
+// Money stored as integer kobo everywhere. Format only at the edge.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Farmer {
+  id           String       @id @default(cuid())
+  name         String
+  phone        String       @unique
+  language     String       @default("ha") // ha|pcm|en
+  geoPoint     String       @default("")   // "lat,lng"
+  crop         String       @default("")
+  ndfrVerified Boolean      @default(false)
+  walletId     String
+  creditScore  Int          @default(0)
+  enrollments  Enrollment[]
+}
+
+model Agent {
+  id          String       @id @default(cuid())
+  name        String
+  phone       String       @unique
+  walletId    String
+  reputation  Int          @default(0)
+  enrollments Enrollment[]
+  lots        Lot[]
+}
+
+model Buyer {
+  id          String     @id @default(cuid())
+  orgName     String
+  contactName String
+  walletId    String
+  contracts   Contract[]
+}
+
+model Contract {
+  id           String       @id @default(cuid())
+  buyerId      String
+  buyer        Buyer        @relation(fields: [buyerId], references: [id])
+  crop         String
+  grade        String       // target grade e.g. "A"
+  volume       Int          // baskets
+  bandMin      Int          // kobo per basket
+  bandMax      Int
+  windowStart  DateTime
+  windowEnd    DateTime
+  status       String       @default("open") // open|filling|filled|closed
+  filledVolume Int          @default(0)
+  enrollments  Enrollment[]
+  orders       Order[]
+  createdAt    DateTime     @default(now())
+}
+
+model Enrollment {
+  id            String   @id @default(cuid())
+  contractId    String
+  contract      Contract @relation(fields: [contractId], references: [id])
+  farmerId      String
+  farmer        Farmer   @relation(fields: [farmerId], references: [id])
+  agentId       String
+  agent         Agent    @relation(fields: [agentId], references: [id])
+  plannedVolume Int
+  advance       Advance?
+  lots          Lot[]
+  createdAt     DateTime @default(now())
+}
+
+model Advance {
+  id           String     @id @default(cuid())
+  enrollmentId String     @unique
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  amount       Int        // kobo
+  status       String     @default("issued") // issued|netted
+  issuedAt     DateTime   @default(now())
+}
+
+model Lot {
+  id           String     @id @default(cuid())
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  agentId      String
+  agent        Agent      @relation(fields: [agentId], references: [id])
+  quantity     Int        // baskets
+  grade        String     @default("A")
+  unitPrice    Int        @default(0) // kobo per basket
+  status       String     @default("picked") // picked|aggregated|delivered
+  traceRef     String     @default("")
+  orderId      String?
+  order        Order?     @relation(fields: [orderId], references: [id])
+  createdAt    DateTime   @default(now())
+}
+
+model Order {
+  id          String    @id @default(cuid())
+  contractId  String
+  contract    Contract  @relation(fields: [contractId], references: [id])
+  lots        Lot[]
+  status      String    @default("open") // open|funded|delivered
+  deliveredAt DateTime?
+  escrow      EscrowAccount?
+  createdAt   DateTime  @default(now())
+}
+
+model Wallet {
+  id        String        @id @default(cuid())
+  ownerType String        // farmer|agent|buyer|platform
+  ownerId   String
+  balance   Int           @default(0) // kobo
+  ledger    LedgerEntry[]
+}
+
+model LedgerEntry {
+  id        String   @id @default(cuid())
+  walletId  String
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  amount    Int      // kobo, signed
+  type      String   // advance|payout|commission|fee|escrow_fund|escrow_release
+  ref       String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model EscrowAccount {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id])
+  amount    Int      // kobo
+  status    String   @default("funded") // funded|released
+  createdAt DateTime @default(now())
+}
+
+model MarketIndex {
+  id         String   @id @default(cuid())
+  crop       String
+  date       DateTime @default(now())
+  indexPrice Int      // kobo per basket (middleman/glut reference)
+
+  @@unique([crop, date])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  toPhone   String
+  channel   String   // USSD|SMS|IVR
+  lang      String   @default("ha")
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+}
