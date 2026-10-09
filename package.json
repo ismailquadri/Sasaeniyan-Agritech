@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "RUN_E2E=1 vitest run src/test/hero-path.e2e.test.ts",
+    "test:e2e": "RUN_E2E=1 vitest run",
     "seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && npm run seed",
     "postinstall": "prisma generate"
