@@ -12,7 +12,7 @@ const Body = z.object({
 
 // Farmer-app Sell flow — same business logic as the USSD channel.
 export async function POST(req: Request) {
-  const parsed = Body.safeParse(await req.json())
+  const parsed = Body.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return Response.json({ error: parsed.error.flatten() }, { status: 400 })
 
   const result = await acceptHarvest(db, parsed.data)

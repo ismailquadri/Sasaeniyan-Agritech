@@ -107,6 +107,12 @@ const json = (body: unknown) =>
 
     const musaWallet = await db.wallet.findUnique({ where: { id: IDS.walletMusa } })
     expect(musaWallet!.balance).toBe(5_700_000) // identical to the USSD path
+
+    const { GET: getState } = await import('@/app/api/state/route')
+    const state = await (await getState()).json()
+    const musaState = state.wallets.find((w: any) => w.id === IDS.walletMusa)
+    expect(musaState.ledger.length).toBeGreaterThan(0)
+    expect(musaState.ledger[0].type).toBe('payout') // desc order: most recent first
   })
 })
 
