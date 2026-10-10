@@ -44,8 +44,8 @@ export function PostTab({ buyer, onPosted }: { buyer: any; onPosted: () => void 
       <SectionHeader>Volume &amp; price band (₦/basket)</SectionHeader>
       <InsetGroup footer="The band is the farmer's protection: the fair price is clamped inside it whatever the market does.">
         <Row title="Volume (baskets)" trailing={<Stepper value={volume} onChange={setVolume} min={10} max={500} step={10} />} />
-        <Row title="Band floor" trailing={<Stepper value={bandMin} onChange={(n) => setBandMin(Math.min(n, bandMax - 500))} min={1000} max={20000} step={500} />} />
-        <Row title="Band ceiling" trailing={<Stepper value={bandMax} onChange={(n) => setBandMax(Math.max(n, bandMin + 500))} min={1500} max={30000} step={500} />} />
+        <Row title="Band floor" trailing={<Stepper value={bandMin} onChange={(n) => setBandMin(Math.min(n, bandMax - 500))} min={1000} max={bandMax - 500} step={500} />} />
+        <Row title="Band ceiling" trailing={<Stepper value={bandMax} onChange={(n) => setBandMax(Math.max(n, bandMin + 500))} min={bandMin + 500} max={30000} step={500} />} />
       </InsetGroup>
 
       {error && <div style={{ color: '#c93400', fontSize: 13, margin: '10px 16px 0' }}>{error}</div>}
