@@ -26,6 +26,9 @@ export async function POST(req: Request) {
   ])
   if (!contract || !farmer) return Response.json({ error: 'contract or farmer not found' }, { status: 404 })
 
+  const existing = await db.enrollment.findFirst({ where: { contractId: b.contractId, farmerId: b.farmerId } })
+  if (existing) return Response.json({ error: 'farmer already enrolled on this contract' }, { status: 409 })
+
   const result = await db.$transaction(async (tx) => {
     const enrollment = await tx.enrollment.create({
       data: {

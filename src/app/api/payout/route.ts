@@ -9,6 +9,8 @@ import { t, type Lang } from '@/domain/i18n/strings'
 import { publish } from '@/realtime/hub'
 
 export const dynamic = 'force-dynamic'
+// The per-lot transaction can legitimately run long on serverless Postgres.
+export const maxDuration = 30
 
 const Body = z.object({ orderId: z.string() })
 
@@ -33,10 +35,13 @@ export async function POST(req: Request) {
   const receipts: { toPhone: string; farmerPayout: number }[] = []
 
   await db.$transaction(async (tx) => {
+    // The order snapshot is pre-transaction, so two lots on the same
+    // enrollment would both see the advance as 'issued' — net it only once.
+    const netted = new Set<string>()
     for (const lot of order.lots) {
       const saleValue = lot.unitPrice * lot.quantity
       const adv = lot.enrollment.advance
-      const advance = adv && adv.status === 'issued' ? adv.amount : 0
+      const advance = adv && adv.status === 'issued' && !netted.has(adv.id) ? adv.amount : 0
       const np = netPayout({
         saleValue,
         advance,
@@ -52,8 +57,9 @@ export async function POST(req: Request) {
       await adjust(tx, lot.agent.walletId, np.agentCommission, 'commission', lot.id)
       await adjust(tx, PLATFORM_WALLET_ID, -np.agentCommission, 'commission', lot.id)
 
-      if (adv && adv.status === 'issued') {
+      if (adv && adv.status === 'issued' && !netted.has(adv.id)) {
         await tx.advance.update({ where: { id: adv.id }, data: { status: 'netted' } })
+        netted.add(adv.id)
       }
       await tx.lot.update({ where: { id: lot.id }, data: { status: 'delivered' } })
       // Credit flywheel: reliable completed cycle.
@@ -78,7 +84,8 @@ export async function POST(req: Request) {
 
     await tx.escrowAccount.update({ where: { id: order.escrow!.id }, data: { status: 'released' } })
     await tx.order.update({ where: { id: order.id }, data: { status: 'delivered', deliveredAt: new Date() } })
-  })
+    // Per-lot ledger writes + SMS add up; default 5s can P2028 on a slow/serverless DB.
+  }, { timeout: 20_000 })
 
   publish({ type: 'PAID', payload: { orderId: order.id, receipts } })
   return Response.json({ orderId: order.id, status: 'delivered', receipts })

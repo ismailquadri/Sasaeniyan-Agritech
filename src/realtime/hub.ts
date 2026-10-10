@@ -19,8 +19,9 @@ export function unsubscribe(controller: ReadableStreamDefaultController<Uint8Arr
   controllers.delete(controller)
 }
 
-/** Fan out an event to every open stream, then persist it (best-effort). */
-export function publish(event: DomainEvent) {
+/** Fan out an event to every open stream, then persist it (best-effort).
+ * Pass { persist: false } when the caller has already written the Event row. */
+export function publish(event: DomainEvent, opts?: { persist?: boolean }) {
   const frame = encoder.encode(`data: ${JSON.stringify(event)}\n\n`)
   for (const c of controllers) {
     try {
@@ -29,6 +30,7 @@ export function publish(event: DomainEvent) {
       controllers.delete(c)
     }
   }
+  if (opts?.persist === false) return
   // Fire-and-forget audit write; never block or fail the request on this.
   db.event
     .create({ data: { type: event.type, payload: (event.payload ?? {}) as object } })

@@ -1,7 +1,7 @@
 // Hero-path integration test: drives the REAL route handlers end-to-end
 // against the dev Postgres, so the demo can't silently break.
 // Guarded behind RUN_E2E=1 (needs the database up); run with `npm run test:e2e`.
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterAll } from 'vitest'
 
 const RUN = process.env.RUN_E2E === '1'
 
@@ -81,7 +81,42 @@ const json = (body: unknown) =>
 
     const advance = await db.advance.findFirst({ where: { enrollmentId: e.enrollment.id } })
     expect(advance!.status).toBe('netted')
-
-    await db.$disconnect()
   })
+
+  it('app path (POST /api/harvest) settles the same ledger', async () => {
+    const { db } = await import('@/lib/db')
+    const { resetDemo, IDS } = await import('@/domain/seed/seed')
+    const { POST: createContract } = await import('@/app/api/contracts/route')
+    const { POST: enroll } = await import('@/app/api/enrollments/route')
+    const { POST: harvest } = await import('@/app/api/harvest/route')
+    const { PATCH: gradeLot } = await import('@/app/api/lots/[id]/route')
+    const { POST: fundEscrow } = await import('@/app/api/escrow/route')
+    const { POST: payout } = await import('@/app/api/payout/route')
+
+    await resetDemo(db)
+    const c = await (await createContract(json({ crop: 'tomato', grade: 'A', volume: 50, bandMin: 5000, bandMax: 9000, windowDays: 14 }))).json()
+    await (await enroll(json({ contractId: c.contract.id, farmerId: IDS.musa, plannedVolume: 20, withAdvance: true }))).json()
+
+    const h = await (await harvest(json({ farmerId: IDS.musa, crop: 'tomato', baskets: 12 }))).json()
+    expect(h.price).toBe(500_000)
+
+    const lot = await db.lot.findFirst({ where: { status: 'picked' } })
+    const g = await (await gradeLot(json({ grade: 'A' }), { params: Promise.resolve({ id: lot!.id }) })).json()
+    await (await fundEscrow(json({ orderId: g.orderId }))).json()
+    await (await payout(json({ orderId: g.orderId }))).json()
+
+    const musaWallet = await db.wallet.findUnique({ where: { id: IDS.walletMusa } })
+    expect(musaWallet!.balance).toBe(5_700_000) // identical to the USSD path
+
+    const { GET: getState } = await import('@/app/api/state/route')
+    const state = await (await getState()).json()
+    const musaState = state.wallets.find((w: any) => w.id === IDS.walletMusa)
+    expect(musaState.ledger.length).toBeGreaterThan(0)
+    expect(musaState.ledger[0].type).toBe('payout') // desc order: most recent first
+  })
+})
+
+afterAll(async () => {
+  const { db } = await import('@/lib/db')
+  await db.$disconnect()
 })

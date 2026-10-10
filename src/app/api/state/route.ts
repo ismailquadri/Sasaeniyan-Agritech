@@ -18,7 +18,7 @@ export async function GET() {
         include: { enrollment: { include: { farmer: true, contract: true } }, agent: true },
       }),
       db.order.findMany({ include: { lots: true, contract: true, escrow: true } }),
-      db.wallet.findMany(),
+      db.wallet.findMany({ include: { ledger: { orderBy: { createdAt: 'desc' }, take: 20 } } }),
       db.message.findMany({ orderBy: { createdAt: 'desc' }, take: 50 }),
       db.marketIndex.findMany(),
       db.event.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }),
