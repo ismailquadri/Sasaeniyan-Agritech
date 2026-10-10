@@ -1,15 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useAppState } from '@/lib/useAppState'
+import type { AppState } from '@/lib/useAppState'
 import { TabBar } from '@/components/ios/kit'
 import { IconOrders, IconPost, IconBuilding } from '@/components/ios/icons'
 import { OrdersTab } from './OrdersTab'
 import { PostTab } from './PostTab'
 import { AccountTab } from './AccountTab'
 
-export function BuyerApp() {
-  const { state } = useAppState()
+// State lifted to the page — one SSE connection per browser window.
+export function BuyerApp({ state }: { state: AppState }) {
   const [tab, setTab] = useState('orders')
   const buyer = state.buyers[0]
   if (!buyer) return <div className="ios-content" />

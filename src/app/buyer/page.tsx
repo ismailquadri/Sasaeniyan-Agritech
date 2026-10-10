@@ -8,7 +8,7 @@ import { IPhoneFrame } from '@/components/iphone/IPhoneFrame'
 import { BuyerApp } from '@/apps/buyer/BuyerApp'
 
 export default function BuyerPage() {
-  const { flash } = useAppState()
+  const { state, flash } = useAppState()
   return (
     <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center px-4 py-6">
       <header className="mb-4 flex w-full items-center justify-between gap-3">
@@ -24,7 +24,7 @@ export default function BuyerPage() {
         <LiveDot flash={flash} />
       </header>
       <IPhoneFrame caption="Mrs. Okafor · Buyer app">
-        <BuyerApp />
+        <BuyerApp state={state} />
       </IPhoneFrame>
     </div>
   )

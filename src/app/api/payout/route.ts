@@ -9,6 +9,8 @@ import { t, type Lang } from '@/domain/i18n/strings'
 import { publish } from '@/realtime/hub'
 
 export const dynamic = 'force-dynamic'
+// The per-lot transaction can legitimately run long on serverless Postgres.
+export const maxDuration = 30
 
 const Body = z.object({ orderId: z.string() })
 

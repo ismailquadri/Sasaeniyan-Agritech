@@ -1,15 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { useAppState } from '@/lib/useAppState'
+import type { AppState } from '@/lib/useAppState'
 import { TabBar, NavLargeTitle, EmptyState } from '@/components/ios/kit'
 import { IconHome, IconSell, IconWallet, IconPerson } from '@/components/ios/icons'
 import { HomeTab } from './HomeTab'
 import { SellTab } from './SellTab'
 import { WalletTab } from './WalletTab'
 
-export function FarmerApp({ farmerId }: { farmerId: string }) {
-  const { state } = useAppState()
+// State is lifted to the page (one useAppState per browser window) so each
+// window holds a single SSE connection — Chrome caps HTTP/1.1 at 6/origin.
+export function FarmerApp({ farmerId, state }: { farmerId: string; state: AppState }) {
   const [tab, setTab] = useState('home')
   const farmer = state.farmers.find((f) => f.id === farmerId)
   if (!farmer) return <div className="ios-content" />

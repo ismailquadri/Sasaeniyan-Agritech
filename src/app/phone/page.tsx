@@ -60,7 +60,7 @@ export default function PhonePage() {
 
       {device === 'iphone' ? (
         <IPhoneFrame caption={`${farmer?.name ?? ''} · Farmer app`}>
-          <FarmerApp key={farmer?.id ?? 'farmer_musa'} farmerId={farmer?.id ?? 'farmer_musa'} />
+          <FarmerApp key={farmer?.id ?? 'farmer_musa'} farmerId={farmer?.id ?? 'farmer_musa'} state={state} />
         </IPhoneFrame>
       ) : (
         <div className="flex flex-col items-center gap-3">

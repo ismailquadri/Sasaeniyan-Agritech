@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAppState } from '@/lib/useAppState'
+import type { AppState } from '@/lib/useAppState'
 import { TabBar, NavLargeTitle, EmptyState } from '@/components/ios/kit'
 import { IconToday, IconEnrol, IconWallet, IconPerson } from '@/components/ios/icons'
 import { TodayTab } from './TodayTab'
@@ -10,8 +10,8 @@ import { WalletTab } from './WalletTab'
 
 const AGENT_ID = 'agent_ibrahim'
 
-export function AgentApp() {
-  const { state } = useAppState()
+// State lifted to the page — one SSE connection per browser window.
+export function AgentApp({ state }: { state: AppState }) {
   const [tab, setTab] = useState('today')
   const agent = state.agents.find((a) => a.id === AGENT_ID) ?? state.agents[0]
   if (!agent) return <div className="ios-content" />
