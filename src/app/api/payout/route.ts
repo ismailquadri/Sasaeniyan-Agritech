@@ -82,7 +82,8 @@ export async function POST(req: Request) {
 
     await tx.escrowAccount.update({ where: { id: order.escrow!.id }, data: { status: 'released' } })
     await tx.order.update({ where: { id: order.id }, data: { status: 'delivered', deliveredAt: new Date() } })
-  })
+    // Per-lot ledger writes + SMS add up; default 5s can P2028 on a slow/serverless DB.
+  }, { timeout: 20_000 })
 
   publish({ type: 'PAID', payload: { orderId: order.id, receipts } })
   return Response.json({ orderId: order.id, status: 'delivered', receipts })
