@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useAppState } from '@/lib/useAppState'
@@ -9,6 +10,12 @@ import { AgentApp } from '@/apps/agent/AgentApp'
 
 export default function AgentPage() {
   const { flash } = useAppState()
+
+  // Installable/offline PWA: keep the service worker registered.
+  useEffect(() => {
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }, [])
+
   return (
     <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center px-4 py-6">
       <header className="mb-4 flex w-full items-center justify-between gap-3">

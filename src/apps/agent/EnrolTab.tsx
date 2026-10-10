@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AppState } from '@/lib/useAppState'
 import { formatNaira } from '@/lib/money'
 import { maxAdvance } from '@/domain/finance/finance'
@@ -24,6 +24,17 @@ export function EnrolTab({ state, agent }: { state: AppState; agent: any }) {
 
   const contract = open.find((c) => c.id === contractId)
   const advance = contract ? maxAdvance({ plannedVolume: volume, bandMin: contract.bandMin, rate: ADVANCE_RATE }) : 0
+  // Farmers already enrolled on the selected contract can't be enrolled twice.
+  const enrolledIds = new Set<string>((contract?.enrollments ?? []).map((e: any) => e.farmerId))
+  const remaining = contract ? Math.max(1, contract.volume - contract.filledVolume) : 200
+
+  // When the contract changes, drop a selected farmer that's already enrolled
+  // on it, and clamp the planned volume to what's left to fill.
+  useEffect(() => {
+    setFarmerId((f) => (f && enrolledIds.has(f) ? null : f))
+    setVolume((v) => Math.min(v, remaining))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contractId])
 
   async function enrol() {
     setBusy(true)
@@ -77,15 +88,24 @@ export function EnrolTab({ state, agent }: { state: AppState; agent: any }) {
 
       <SectionHeader>Farmer</SectionHeader>
       <InsetGroup>
-        {state.farmers.map((f) => (
-          <Row key={f.id} title={f.name} subtitle={`${f.crop} · ${f.phone}`} selected={farmerId === f.id} onClick={() => setFarmerId(f.id)} />
-        ))}
+        {state.farmers.map((f) => {
+          const already = enrolledIds.has(f.id)
+          return (
+            <Row
+              key={f.id}
+              title={f.name}
+              subtitle={already ? 'already enrolled on this contract' : `${f.crop} · ${f.phone}`}
+              selected={farmerId === f.id}
+              onClick={already ? undefined : () => setFarmerId(f.id)}
+            />
+          )
+        })}
         <Row icon={<IconEnrol width={16} height={16} />} title="New farmer…" onClick={() => setNewFarmerOpen(true)} chevron />
       </InsetGroup>
 
       <SectionHeader>Terms</SectionHeader>
       <InsetGroup footer={contract ? `Advance cap = ${Math.round(ADVANCE_RATE * 100)}% × planned volume × band floor.` : 'Pick a contract to compute the advance.'}>
-        <Row title="Planned volume" trailing={<Stepper value={volume} onChange={setVolume} min={1} max={200} />} />
+        <Row title="Planned volume" trailing={<Stepper value={volume} onChange={setVolume} min={1} max={remaining} />} />
         <Row title="Input advance" subtitle={contract ? `up to ${formatNaira(advance)}` : undefined} trailing={<Toggle on={withAdvance} onChange={setWithAdvance} label="Input advance" />} />
       </InsetGroup>
 
@@ -107,6 +127,13 @@ function NewFarmerSheet({ open, onClose }: { open: boolean; onClose: () => void 
   const [crop, setCrop] = useState('tomato')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Fresh form every time the sheet opens.
+  useEffect(() => {
+    if (open) {
+      setName(''); setPhone(''); setCrop('tomato'); setError(null)
+    }
+  }, [open])
 
   async function save() {
     setBusy(true)
@@ -131,8 +158,8 @@ function NewFarmerSheet({ open, onClose }: { open: boolean; onClose: () => void 
     <Sheet open={open} onClose={onClose}>
       <h2 className="ios-title2" style={{ margin: '4px 0 12px' }}>New farmer</h2>
       <InsetGroup>
-        <div className="ios-row"><input style={input} placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} /></div>
-        <div className="ios-row"><input style={input} placeholder="Phone (+234…)" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+        <div className="ios-row"><input style={input} aria-label="Full name" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} /></div>
+        <div className="ios-row"><input style={input} aria-label="Phone" placeholder="Phone (+234…)" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
       </InsetGroup>
       <div style={{ marginTop: 12 }}>
         <InsetGroup>

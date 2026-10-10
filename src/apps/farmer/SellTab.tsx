@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { AppState } from '@/lib/useAppState'
+import { latestIndex, type AppState } from '@/lib/useAppState'
 import { formatNaira } from '@/lib/money'
 import { priceBreakdown, type Grade } from '@/domain/pricing/pricing'
 import { call } from '@/lib/api'
@@ -24,7 +24,7 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
         (c) => c.crop === crop && c.status !== 'closed' && c.enrollments?.some((e: any) => e.farmerId === farmer.id),
       )
     : null
-  const index = crop ? state.marketIndex.find((m) => m.crop === crop) : null
+  const index = crop ? latestIndex(state.marketIndex, crop) : null
   const bd =
     contract && index
       ? priceBreakdown({ indexPrice: index.indexPrice, grade: contract.grade as Grade, bandMin: contract.bandMin, bandMax: contract.bandMax })

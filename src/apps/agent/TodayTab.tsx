@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { AppState } from '@/lib/useAppState'
+import { latestIndex, type AppState } from '@/lib/useAppState'
 import { formatNaira } from '@/lib/money'
 import { fairPrice, type Grade } from '@/domain/pricing/pricing'
 import { call } from '@/lib/api'
@@ -10,16 +10,17 @@ import { cropGlyph, IconTray } from '@/components/ios/icons'
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-export function TodayTab({ state }: { state: AppState }) {
-  const picked = state.lots.filter((l) => l.status === 'picked')
-  const done = state.lots.filter((l) => l.status !== 'picked')
+export function TodayTab({ state, agent }: { state: AppState; agent: any }) {
+  const mine = state.lots.filter((l) => l.agentId === agent.id)
+  const picked = mine.filter((l) => l.status === 'picked')
+  const done = mine.filter((l) => l.status !== 'picked')
   const [gradingLot, setGradingLot] = useState<any | null>(null)
   const [grade, setGrade] = useState<Grade>('A')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const contract = gradingLot?.enrollment?.contract
-  const index = contract ? state.marketIndex.find((m) => m.crop === contract.crop) : null
+  const index = contract ? latestIndex(state.marketIndex, contract.crop) : null
   const preview =
     contract && index
       ? fairPrice({ indexPrice: index.indexPrice, grade, bandMin: contract.bandMin, bandMax: contract.bandMax })
@@ -59,7 +60,7 @@ export function TodayTab({ state }: { state: AppState }) {
                 title={`${l.enrollment?.farmer?.name} · ${cap(l.enrollment?.contract?.crop ?? '')}`}
                 subtitle={`${l.quantity} baskets · offered ${formatNaira(l.unitPrice)}/basket`}
                 chevron
-                onClick={() => { setError(null); setGradingLot(l) }}
+                onClick={() => { setError(null); setGrade('A'); setGradingLot(l) }}
               />
             )
           })}

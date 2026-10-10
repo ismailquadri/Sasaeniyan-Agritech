@@ -21,6 +21,12 @@ const EMPTY: AppState = {
   farmers: [], agents: [], buyers: [], contracts: [], lots: [], orders: [], wallets: [], messages: [], marketIndex: [], events: [],
 }
 
+/** Most recent market-index row for a crop — /api/state returns them unordered. */
+export const latestIndex = (marketIndex: any[], crop: string) =>
+  [...marketIndex]
+    .filter((m) => m.crop === crop)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+
 /** Fetch /api/state and refetch on every server event (live cross-actor sync). */
 export function useAppState() {
   const [state, setState] = useState<AppState>(EMPTY)

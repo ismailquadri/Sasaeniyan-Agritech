@@ -5,6 +5,10 @@ import { formatNaira } from '@/lib/money'
 import { NavLargeTitle, SectionHeader, InsetGroup, Row, EmptyState } from '@/components/ios/kit'
 import { IconWallet } from '@/components/ios/icons'
 
+const LEDGER_LABEL: Record<string, string> = {
+  commission: 'Lot commission',
+}
+
 export function WalletTab({ state, agent }: { state: AppState; agent: any }) {
   const wallet = state.wallets.find((w) => w.ownerId === agent.id)
   const ledger: any[] = wallet?.ledger ?? []
@@ -22,7 +26,8 @@ export function WalletTab({ state, agent }: { state: AppState; agent: any }) {
       ) : (
         <InsetGroup>
           {ledger.map((e) => (
-            <Row key={e.id} title="Lot commission" subtitle={new Date(e.createdAt).toLocaleString()}
+            <Row key={e.id} title={LEDGER_LABEL[e.type] ?? e.type}
+              subtitle={new Date(e.createdAt).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}
               value={<span style={{ color: 'var(--ios-tint)' }}>+{formatNaira(e.amount)}</span>} />
           ))}
         </InsetGroup>

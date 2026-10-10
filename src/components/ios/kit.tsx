@@ -135,7 +135,7 @@ export function Segmented({ options, value, onChange }: { options: { key: string
   return (
     <div className="ios-seg" role="radiogroup">
       {options.map((o) => (
-        <button key={o.key} type="button" className={o.key === value ? 'active' : ''} aria-pressed={o.key === value} onClick={() => onChange(o.key)}>
+        <button key={o.key} type="button" role="radio" className={o.key === value ? 'active' : ''} aria-checked={o.key === value} onClick={() => onChange(o.key)}>
           {o.label}
         </button>
       ))}

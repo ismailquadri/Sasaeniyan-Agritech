@@ -18,7 +18,7 @@ export function AgentApp() {
 
   return (
     <>
-      {tab === 'today' && <TodayTab state={state} />}
+      {tab === 'today' && <TodayTab state={state} agent={agent} />}
       {tab === 'enrol' && <EnrolTab state={state} agent={agent} />}
       {tab === 'wallet' && <WalletTab state={state} agent={agent} />}
       {tab === 'profile' && (
