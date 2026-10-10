@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* Sasaeniyan — warm African-modern design system (earthy green + gold).
+   High contrast for low-literacy legibility; fintech-trust typography. */
+@theme {
+  --color-brand: #2e6b3e;
+  --color-brand-dark: #1f4d2b;
+  --color-brand-light: #e6f0e8;
+  --color-gold: #e2a63b;
+  --color-gold-light: #fbf0d8;
+  --color-clay: #c05a2e;
+  --color-clay-light: #f8e6dc;
+
+  --color-cream: #fbf8f1;
+  --color-surface: #ffffff;
+  --color-ink: #1c1917;
+  --color-muted: #6b6560;
+  --color-line: #e8e1d4;
+
+  --color-ok: #15803d;
+  --color-warn: #b45309;
+  --color-danger: #dc2626;
+  --color-info: #1d4ed8;
+
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-plex), ui-sans-serif, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular figures for money/data so columns don't shift. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
