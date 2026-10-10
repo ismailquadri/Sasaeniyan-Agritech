@@ -3,7 +3,7 @@
 import type { AppState } from '@/lib/useAppState'
 import { formatNaira } from '@/lib/money'
 import { fairPrice, type Grade } from '@/domain/pricing/pricing'
-import { NavLargeTitle, SectionHeader, InsetGroup, Row, PrimaryButton, SecondaryButton, Pill } from '@/components/ios/kit'
+import { NavLargeTitle, SectionHeader, InsetGroup, Row, PrimaryButton, Pill } from '@/components/ios/kit'
 import { cropGlyph, IconShield } from '@/components/ios/icons'
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
@@ -26,7 +26,6 @@ export function HomeTab({ state, farmer, onSell }: { state: AppState; farmer: an
         )}
         <div className="ios-balance-actions">
           <PrimaryButton onClick={onSell}>Sell harvest</PrimaryButton>
-          <SecondaryButton onClick={onSell}>Prices</SecondaryButton>
         </div>
       </div>
 

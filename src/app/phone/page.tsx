@@ -37,6 +37,7 @@ export default function PhonePage() {
             <button
               key={d}
               onClick={() => setDevice(d)}
+              aria-pressed={device === d}
               className={`flex-1 cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold ${device === d ? 'bg-brand text-white' : 'text-muted'}`}
             >
               {d === 'iphone' ? 'iPhone app' : 'Nokia · USSD'}
@@ -48,6 +49,7 @@ export default function PhonePage() {
             <button
               key={f.id}
               onClick={() => setFarmerId(f.id)}
+              aria-pressed={farmerId === f.id}
               className={`flex-1 cursor-pointer rounded-lg border px-2 py-1.5 text-xs font-semibold ${farmerId === f.id ? 'border-brand bg-brand-light text-brand-dark' : 'border-line text-muted'}`}
             >
               {f.name}
@@ -57,7 +59,9 @@ export default function PhonePage() {
       </div>
 
       {device === 'iphone' ? (
-        farmer ? <IPhoneFrame caption={`${farmer.name} · Farmer app`}><FarmerApp farmerId={farmer.id} /></IPhoneFrame> : null
+        <IPhoneFrame caption={`${farmer?.name ?? ''} · Farmer app`}>
+          <FarmerApp key={farmer?.id ?? 'farmer_musa'} farmerId={farmer?.id ?? 'farmer_musa'} />
+        </IPhoneFrame>
       ) : (
         <div className="flex flex-col items-center gap-3">
           <FeaturePhone phone={farmer?.phone ?? ''} messages={messages} />

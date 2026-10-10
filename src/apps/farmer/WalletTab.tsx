@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import type { AppState } from '@/lib/useAppState'
 import { formatNaira } from '@/lib/money'
-import { netPayout } from '@/domain/finance/finance'
 import { PLATFORM_FEE_RATE, AGENT_COMMISSION_RATE } from '@/domain/config'
 import { NavLargeTitle, SectionHeader, InsetGroup, Row, Sheet, EmptyState } from '@/components/ios/kit'
 import { IconWallet } from '@/components/ios/icons'
@@ -20,7 +19,7 @@ const LEDGER_LABEL: Record<string, string> = {
 export function WalletTab({ state, farmer }: { state: AppState; farmer: any }) {
   const wallet = state.wallets.find((w) => w.ownerId === farmer.id)
   const ledger: any[] = wallet?.ledger ?? []
-  const [receiptLot, setReceiptLot] = useState<any | null>(null)
+  const [receipt, setReceipt] = useState<{ lot: any; entry: any } | null>(null)
 
   // Delivered lots for this farmer → receipt detail source.
   const deliveredLots = state.lots.filter(
@@ -47,31 +46,34 @@ export function WalletTab({ state, farmer }: { state: AppState; farmer: any }) {
               <Row
                 key={e.id}
                 title={LEDGER_LABEL[e.type] ?? e.type}
-                subtitle={new Date(e.createdAt).toLocaleString()}
+                subtitle={new Date(e.createdAt).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}
                 value={
                   <span style={{ color: e.amount >= 0 ? 'var(--ios-tint)' : '#c93400' }}>
                     {e.amount >= 0 ? '+' : ''}{formatNaira(e.amount)}
                   </span>
                 }
                 chevron={!!lot}
-                onClick={lot ? () => setReceiptLot(lot) : undefined}
+                onClick={lot ? () => setReceipt({ lot, entry: e }) : undefined}
               />
             )
           })}
         </InsetGroup>
       )}
 
-      <Sheet open={!!receiptLot} onClose={() => setReceiptLot(null)}>
-        {receiptLot && <Receipt lot={receiptLot} />}
+      <Sheet open={!!receipt} onClose={() => setReceipt(null)}>
+        {receipt && <Receipt lot={receipt.lot} entry={receipt.entry} />}
       </Sheet>
     </div>
   )
 }
 
-function Receipt({ lot }: { lot: any }) {
+function Receipt({ lot, entry }: { lot: any; entry: any }) {
+  // Derived from the tapped ledger entry: paid = entry.amount, so the advance
+  // netted is exact by construction (handles no-advance and multi-lot cases).
   const saleValue = lot.unitPrice * lot.quantity
-  const advance = lot.enrollment?.advance?.amount ?? 0
-  const np = netPayout({ saleValue, advance, feeRate: PLATFORM_FEE_RATE, commissionRate: AGENT_COMMISSION_RATE })
+  const platformFee = Math.round(saleValue * PLATFORM_FEE_RATE)
+  const agentCommission = Math.round(saleValue * AGENT_COMMISSION_RATE)
+  const advanceNetted = saleValue - platformFee - agentCommission - entry.amount
   return (
     <div>
       <h2 className="ios-title2" style={{ margin: '4px 0 2px' }}>Payment receipt</h2>
@@ -80,10 +82,10 @@ function Receipt({ lot }: { lot: any }) {
       </div>
       <InsetGroup>
         <Row title="Sale value" value={formatNaira(saleValue)} />
-        <Row title="Advance repaid" value={`−${formatNaira(np.advanceNetted)}`} />
-        <Row title="Platform fee (3%)" value={`−${formatNaira(np.platformFee)}`} />
-        <Row title="Agent commission (2%)" value={`−${formatNaira(np.agentCommission)}`} />
-        <Row title={<b>Paid to you</b>} value={<b style={{ color: 'var(--ios-tint)' }}>{formatNaira(np.farmerPayout)}</b>} />
+        <Row title="Advance repaid" value={`−${formatNaira(advanceNetted)}`} />
+        <Row title="Platform fee (3%)" value={`−${formatNaira(platformFee)}`} />
+        <Row title="Agent commission (2%)" value={`−${formatNaira(agentCommission)}`} />
+        <Row title={<b>Paid to you</b>} value={<b style={{ color: 'var(--ios-tint)' }}>{formatNaira(entry.amount)}</b>} />
       </InsetGroup>
     </div>
   )

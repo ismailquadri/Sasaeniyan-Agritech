@@ -33,10 +33,13 @@ export async function POST(req: Request) {
   const receipts: { toPhone: string; farmerPayout: number }[] = []
 
   await db.$transaction(async (tx) => {
+    // The order snapshot is pre-transaction, so two lots on the same
+    // enrollment would both see the advance as 'issued' — net it only once.
+    const netted = new Set<string>()
     for (const lot of order.lots) {
       const saleValue = lot.unitPrice * lot.quantity
       const adv = lot.enrollment.advance
-      const advance = adv && adv.status === 'issued' ? adv.amount : 0
+      const advance = adv && adv.status === 'issued' && !netted.has(adv.id) ? adv.amount : 0
       const np = netPayout({
         saleValue,
         advance,
@@ -52,8 +55,9 @@ export async function POST(req: Request) {
       await adjust(tx, lot.agent.walletId, np.agentCommission, 'commission', lot.id)
       await adjust(tx, PLATFORM_WALLET_ID, -np.agentCommission, 'commission', lot.id)
 
-      if (adv && adv.status === 'issued') {
+      if (adv && adv.status === 'issued' && !netted.has(adv.id)) {
         await tx.advance.update({ where: { id: adv.id }, data: { status: 'netted' } })
+        netted.add(adv.id)
       }
       await tx.lot.update({ where: { id: lot.id }, data: { status: 'delivered' } })
       // Credit flywheel: reliable completed cycle.

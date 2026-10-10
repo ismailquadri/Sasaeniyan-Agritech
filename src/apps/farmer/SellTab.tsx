@@ -16,8 +16,14 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
   const [offerOpen, setOfferOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [sold, setSold] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const contract = crop ? state.contracts.find((c) => c.crop === crop && c.status !== 'closed') : null
+  // Only contracts this farmer is enrolled in are sellable.
+  const contract = crop
+    ? state.contracts.find(
+        (c) => c.crop === crop && c.status !== 'closed' && c.enrollments?.some((e: any) => e.farmerId === farmer.id),
+      )
+    : null
   const index = crop ? state.marketIndex.find((m) => m.crop === crop) : null
   const bd =
     contract && index
@@ -27,11 +33,16 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
   async function accept() {
     if (!crop) return
     setBusy(true)
-    const r = await call('/api/harvest', 'POST', { farmerId: farmer.id, crop, baskets })
-    setBusy(false)
-    if (!r.error) {
-      setOfferOpen(false)
-      setSold(true)
+    try {
+      const r = await call('/api/harvest', 'POST', { farmerId: farmer.id, crop, baskets })
+      if (r.error) {
+        setError(String(r.error))
+      } else {
+        setOfferOpen(false)
+        setSold(true)
+      }
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -45,7 +56,9 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
           <h3>Harvest accepted</h3>
           <p>{baskets} baskets of {crop}. Your agent will come to collect. You&apos;ll get an SMS at every step.</p>
         </div>
-        <PrimaryButton onClick={() => { setSold(false); setCrop(null); onDone() }}>View wallet</PrimaryButton>
+        <div style={{ display: 'flex' }}>
+          <PrimaryButton onClick={() => { setSold(false); setCrop(null); onDone() }}>View wallet</PrimaryButton>
+        </div>
       </div>
     )
   }
@@ -58,14 +71,15 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
       <InsetGroup>
         {state.marketIndex.map((m) => {
           const g = cropGlyph(m.crop)
-          const hasContract = state.contracts.some((c) => c.crop === m.crop && c.status !== 'closed')
+          const open = state.contracts.filter((c) => c.crop === m.crop && c.status !== 'closed')
+          const enrolled = open.some((c) => c.enrollments?.some((e: any) => e.farmerId === farmer.id))
           return (
             <Row
               key={m.id}
               icon={g.icon}
               iconBg={g.color}
               title={cap(m.crop)}
-              subtitle={hasContract ? 'buyer demand open' : 'no open demand'}
+              subtitle={enrolled ? 'buyer demand open' : open.length > 0 ? 'not enrolled — see your agent' : 'no open demand'}
               selected={crop === m.crop}
               onClick={() => setCrop(m.crop)}
             />
@@ -79,7 +93,7 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
       </InsetGroup>
 
       <div style={{ marginTop: 24, display: 'flex' }}>
-        <PrimaryButton disabled={!crop || !bd} onClick={() => setOfferOpen(true)}>
+        <PrimaryButton disabled={!crop || !bd} onClick={() => { setError(null); setOfferOpen(true) }}>
           {crop && !bd ? 'No open contract for this crop' : 'See your fair price'}
         </PrimaryButton>
       </div>
@@ -93,13 +107,13 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
             <h2 className="ios-title2" style={{ margin: '4px 0 2px' }}>Your fair price</h2>
             <div className="ios-caption1" style={{ marginBottom: 14 }}>{baskets} baskets · {cap(crop!)} · grade {bd.grade}</div>
             <InsetGroup footer="The farm-gate price is what the middleman offers in a glut. Your contract band protects you from it.">
-              <Row title="Market index" value={formatNaira(bd.index)} />
+              <Row title="Market index (farm-gate)" value={formatNaira(bd.index)} />
               <Row title={`Grade ${bd.grade} factor`} value={`×${bd.factor}`} />
               <Row title="Contract band" value={`${formatNaira(bd.band[0])}–${formatNaira(bd.band[1])}`} />
-              <Row title="Farm-gate (middleman)" struckValue={formatNaira(index.indexPrice)} value="" />
-              <Row title={<b>Per basket</b>} value={<b style={{ color: 'var(--ios-tint)' }}>{formatNaira(bd.price)}</b>} />
+              <Row title={<b>Per basket</b>} struckValue={formatNaira(index.indexPrice)} value={<b style={{ color: 'var(--ios-tint)' }}>{formatNaira(bd.price)}</b>} />
               <Row title={<b>Total ({baskets} baskets)</b>} value={<b>{formatNaira(bd.price * baskets)}</b>} />
             </InsetGroup>
+            {error && <div style={{ color: '#c93400', fontSize: 13, marginTop: 10 }}>{error}</div>}
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <SecondaryButton onClick={() => setOfferOpen(false)}>Cancel</SecondaryButton>
               <PrimaryButton loading={busy} onClick={accept}>Accept offer</PrimaryButton>
