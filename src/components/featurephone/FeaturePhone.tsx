@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Phone, MessageSquare, Signal, BatteryFull, Delete } from 'lucide-react'
 
 async function ussd(phone: string, sessionId: string, input: string) {
@@ -12,7 +12,7 @@ async function ussd(phone: string, sessionId: string, input: string) {
   return res.json() as Promise<{ prompt: string; step: string }>
 }
 
-export function FeaturePhone({ phone, messages }: { phone: string; messages: any[] }) {
+export function FeaturePhone({ phone, messages }: { phone: string; messages: { id: string; body: string }[] }) {
   const [tab, setTab] = useState<'ussd' | 'sms'>('ussd')
 
   // USSD session
@@ -22,11 +22,17 @@ export function FeaturePhone({ phone, messages }: { phone: string; messages: any
   const [buffer, setBuffer] = useState('')
   const [busy, setBusy] = useState(false)
 
+  // Invalidates in-flight USSD responses when the session ends, the farmer
+  // switches, or the component unmounts, so they can't setState on stale state.
+  const reqToken = useRef(0)
+
   function endSession() {
+    reqToken.current++
     setSession(null)
     setPrompt('')
     setStep('')
     setBuffer('')
+    setBusy(false)
   }
 
   // Reset USSD session whenever the active farmer's phone changes.
@@ -35,25 +41,47 @@ export function FeaturePhone({ phone, messages }: { phone: string; messages: any
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phone])
 
+  // Invalidate any in-flight request on unmount.
+  useEffect(
+    () => () => {
+      reqToken.current++
+    },
+    [],
+  )
+
   async function dial() {
+    const token = ++reqToken.current
     const sid = 's' + Date.now()
     setSession(sid)
     setBuffer('')
     setBusy(true)
-    const r = await ussd(phone, sid, '')
-    setPrompt(r.prompt)
-    setStep(r.step)
-    setBusy(false)
+    try {
+      const r = await ussd(phone, sid, '')
+      if (token !== reqToken.current) return
+      setPrompt(r.prompt)
+      setStep(r.step)
+    } catch {
+      /* network error: leave current prompt */
+    } finally {
+      if (token === reqToken.current) setBusy(false)
+    }
   }
 
   async function send() {
     if (!session) return
+    const token = ++reqToken.current
     setBusy(true)
-    const r = await ussd(phone, session, buffer)
-    setPrompt(r.prompt)
-    setStep(r.step)
-    setBuffer('')
-    setBusy(false)
+    try {
+      const r = await ussd(phone, session, buffer)
+      if (token !== reqToken.current) return
+      setPrompt(r.prompt)
+      setStep(r.step)
+      setBuffer('')
+    } catch {
+      /* network error: leave current prompt */
+    } finally {
+      if (token === reqToken.current) setBusy(false)
+    }
   }
 
   return (
