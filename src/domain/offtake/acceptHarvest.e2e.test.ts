@@ -40,7 +40,7 @@ const RUN = process.env.RUN_E2E === '1'
     // Unknown crop → null, no lot created
     const none = await acceptHarvest(db, { farmerId: IDS.musa, crop: 'maize', baskets: 5 })
     expect(none).toBeNull()
-    expect(await db.lot.count()).toBe(1)
+    expect(await db.lot.count({ where: { status: 'picked' } })).toBe(1) // only the accepted harvest; seed history lots excluded
 
     await db.$disconnect()
   })

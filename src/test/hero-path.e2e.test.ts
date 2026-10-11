@@ -20,6 +20,11 @@ const json = (body: unknown) =>
     const { POST: payout } = await import('@/app/api/payout/route')
 
     await resetDemo(db)
+    const before = {
+      musa: (await db.wallet.findUnique({ where: { id: IDS.walletMusa } }))!.balance,
+      agent: (await db.wallet.findUnique({ where: { id: IDS.walletAgent } }))!.balance,
+      platform: (await db.wallet.findUnique({ where: { id: IDS.walletPlatform } }))!.balance,
+    }
 
     // 1. Buyer posts demand: tomato, Grade A, 50 baskets, ₦5,000–₦9,000/basket.
     const c = await (await createContract(json({ crop: 'tomato', grade: 'A', volume: 50, bandMin: 5000, bandMax: 9000, windowDays: 14 }))).json()
@@ -64,14 +69,14 @@ const json = (body: unknown) =>
     expect(contract!.filledVolume).toBe(12)
 
     const musaWallet = await db.wallet.findUnique({ where: { id: IDS.walletMusa } })
-    // advance ₦40,000 + net payout ₦17,000 = ₦57,000
-    expect(musaWallet!.balance).toBe(5_700_000)
+    // advance ₦40,000 + net payout ₦17,000 = ₦57,000 gained this cycle
+    expect(musaWallet!.balance - before.musa).toBe(5_700_000)
 
     const agentWallet = await db.wallet.findUnique({ where: { id: IDS.walletAgent } })
-    expect(agentWallet!.balance).toBe(120_000) // 2% commission on ₦60,000
+    expect(agentWallet!.balance - before.agent).toBe(120_000) // 2% commission on ₦60,000
 
     const platformWallet = await db.wallet.findUnique({ where: { id: IDS.walletPlatform } })
-    expect(platformWallet!.balance).toBe(180_000) // 3% fee net of advance recoup
+    expect(platformWallet!.balance - before.platform).toBe(180_000) // 3% fee net of advance recoup
 
     const deliveredLot = await db.lot.findUnique({ where: { id: lot!.id } })
     expect(deliveredLot!.status).toBe('delivered')
@@ -94,6 +99,7 @@ const json = (body: unknown) =>
     const { POST: payout } = await import('@/app/api/payout/route')
 
     await resetDemo(db)
+    const beforeMusa = (await db.wallet.findUnique({ where: { id: IDS.walletMusa } }))!.balance
     const c = await (await createContract(json({ crop: 'tomato', grade: 'A', volume: 50, bandMin: 5000, bandMax: 9000, windowDays: 14 }))).json()
     await (await enroll(json({ contractId: c.contract.id, farmerId: IDS.musa, plannedVolume: 20, withAdvance: true }))).json()
 
@@ -106,7 +112,7 @@ const json = (body: unknown) =>
     await (await payout(json({ orderId: g.orderId }))).json()
 
     const musaWallet = await db.wallet.findUnique({ where: { id: IDS.walletMusa } })
-    expect(musaWallet!.balance).toBe(5_700_000) // identical to the USSD path
+    expect(musaWallet!.balance - beforeMusa).toBe(5_700_000) // identical to the USSD path
 
     const { GET: getState } = await import('@/app/api/state/route')
     const state = await (await getState()).json()
