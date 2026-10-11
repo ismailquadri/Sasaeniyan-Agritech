@@ -107,7 +107,7 @@ export function Delta({ points }: { points: number[] }) {
   const pct = ((points[points.length - 1] - points[0]) / points[0]) * 100
   const rising = pct >= 0
   return (
-    <span className="ios-delta tnum" style={{ color: rising ? '#1f9d4d' : '#c0392b' }}>
+    <span className="ios-delta tnum" style={{ color: rising ? '#117a38' : '#c0392b' }}>
       {rising ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
     </span>
   )
