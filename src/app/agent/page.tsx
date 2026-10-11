@@ -9,7 +9,7 @@ import { IPhoneFrame } from '@/components/iphone/IPhoneFrame'
 import { AgentApp } from '@/apps/agent/AgentApp'
 
 export default function AgentPage() {
-  const { state, flash } = useAppState()
+  const { state, flash, status, online, refetch } = useAppState()
 
   // Installable/offline PWA: keep the service worker registered.
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function AgentPage() {
         <LiveDot flash={flash} />
       </header>
       <IPhoneFrame caption="Ibrahim · Agent app">
-        <AgentApp state={state} />
+        <AgentApp state={state} status={status} online={online} onRetry={refetch} />
       </IPhoneFrame>
     </div>
   )
