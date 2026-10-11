@@ -10,7 +10,7 @@ import { FarmerApp } from '@/apps/farmer/FarmerApp'
 import { FeaturePhone } from '@/components/featurephone/FeaturePhone'
 
 export default function PhonePage() {
-  const { state, flash } = useAppState()
+  const { state, flash, status, online, refetch } = useAppState()
   const [device, setDevice] = useState<'iphone' | 'nokia'>('iphone')
   const [farmerId, setFarmerId] = useState('farmer_musa')
   const farmer = state.farmers.find((f) => f.id === farmerId) ?? state.farmers[0]
@@ -60,7 +60,7 @@ export default function PhonePage() {
 
       {device === 'iphone' ? (
         <IPhoneFrame caption={`${farmer?.name ?? ''} · Farmer app`}>
-          <FarmerApp key={farmer?.id ?? 'farmer_musa'} farmerId={farmer?.id ?? 'farmer_musa'} state={state} />
+          <FarmerApp key={farmer?.id ?? 'farmer_musa'} farmerId={farmer?.id ?? 'farmer_musa'} state={state} status={status} online={online} onRetry={refetch} />
         </IPhoneFrame>
       ) : (
         <div className="flex flex-col items-center gap-3">

@@ -175,3 +175,123 @@ button.ios-row:active { background: #d1d1d6; }
 .ios-empty { text-align: center; padding: 56px 24px; color: var(--ios-label2); }
 .ios-empty h3 { font-size: 17px; font-weight: 600; color: var(--ios-label); margin: 10px 0 4px; }
 .ios-empty p { font-size: 14px; margin: 0; line-height: 1.4; }
+
+/* ===================== Hybrid upgrade components ===================== */
+
+/* Hero wallet card */
+.ios-hero {
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: #fff;
+  margin-top: 4px;
+}
+.ios-hero--farmer { background: linear-gradient(135deg, #2e6b3e, #17402a 75%); box-shadow: 0 6px 16px rgba(46, 107, 62, 0.35); }
+.ios-hero--agent { background: linear-gradient(135deg, #a84a22, #6b2d14 75%); box-shadow: 0 6px 16px rgba(168, 74, 34, 0.35); }
+.ios-hero--buyer { background: linear-gradient(135deg, #7d560f, #54390a 75%); box-shadow: 0 6px 16px rgba(125, 86, 15, 0.35); }
+.ios-hero-toprow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ios-hero-label { font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: rgba(255, 255, 255, 0.92); }
+.ios-hero-chips { display: flex; gap: 5px; }
+.ios-hero-balance { font-size: 34px; font-weight: 800; letter-spacing: -1px; margin-top: 2px; }
+.ios-hero-actions { display: flex; gap: 8px; margin-top: 12px; }
+.ios-heroaction {
+  flex: 1; min-height: 44px; border: 0; border-radius: 11px; cursor: pointer;
+  font: inherit; font-size: 15px; font-weight: 600;
+  background: rgba(255, 255, 255, 0.16); color: #fff;
+  transition: opacity 0.15s;
+}
+.ios-heroaction.primary { background: #e2a63b; color: #241a05; font-weight: 800; }
+.ios-heroaction:active { opacity: 0.75; }
+.ios-heroaction:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Chips */
+.ios-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; padding: 2.5px 8px; border-radius: 99px;
+  white-space: nowrap;
+}
+.ios-chip.success { background: rgba(46, 107, 62, 0.12); color: #246434; }
+.ios-chip.warning { background: rgba(255, 149, 0, 0.16); color: #9b5300; }
+.ios-chip.danger { background: rgba(255, 59, 48, 0.12); color: #9c2b1f; }
+.ios-chip.info { background: rgba(0, 122, 255, 0.12); color: #0a66c2; }
+.ios-chip.neutral { background: var(--ios-fill); color: #55555c; }
+.ios-chip.gold { background: rgba(226, 166, 59, 0.2); color: #8a5e0d; }
+.ios-chip.ondark { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+.ios-delta { font-size: 11px; font-weight: 700; }
+
+/* Journey tracker */
+.ios-journey { width: 100%; }
+.ios-journey-track { display: flex; align-items: center; }
+.ios-journey-dot { width: 7px; height: 7px; border-radius: 50%; background: #d8d8dc; flex-shrink: 0; }
+.ios-journey-dot.done { background: var(--ios-tint); }
+.ios-journey-dot.now { background: var(--ios-tint); box-shadow: 0 0 0 3px rgba(46, 107, 62, 0.22); animation: ios-pulse 1.6s ease-in-out infinite; }
+.ios-journey-dot.bad { background: #ff3b30; box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.2); }
+.ios-journey-bar { flex: 1; height: 2.5px; background: #e3e3e7; margin: 0 2px; border-radius: 2px; }
+.ios-journey-bar.done { background: var(--ios-tint); }
+.ios-journey-bar.bad { background: #ff3b30; }
+.ios-journey-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+.ios-journey-labels span { font-size: 8.5px; font-weight: 600; color: var(--ios-label3); }
+.ios-journey-labels span.done { color: #5c5c62; }
+.ios-journey-labels span.now { color: var(--ios-tint); }
+.ios-journey-labels span.bad { color: #c0392b; }
+@keyframes ios-pulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(46, 107, 62, 0.22); } 50% { box-shadow: 0 0 0 5px rgba(46, 107, 62, 0.1); } }
+
+/* Row photo */
+.ios-rowphoto { border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+
+/* Photo cards */
+.ios-photocard {
+  position: relative; border-radius: 14px; overflow: hidden; border: 0; padding: 0;
+  cursor: default; width: 100%; display: block; background: #ddd; text-align: left;
+}
+button.ios-photocard { cursor: pointer; }
+.ios-photocard img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ios-photocard-overlay {
+  position: absolute; inset: auto 0 0 0; padding: 22px 9px 7px;
+  background: linear-gradient(transparent 20%, rgba(0, 0, 0, 0.82));
+  display: flex; flex-direction: column;
+}
+.ios-photocard-label { color: #fff; font-size: 13px; font-weight: 700; line-height: 1.2; }
+.ios-photocard-sub { color: rgba(255, 255, 255, 0.85); font-size: 10px; margin-top: 1px; }
+.ios-photocard-badge { position: absolute; top: 7px; right: 7px; z-index: 1; }
+.ios-photocard.selected { outline: 3px solid #e2a63b; outline-offset: -3px; }
+.ios-photocard:focus-visible { outline: 3px solid var(--ios-tint); outline-offset: -3px; }
+
+/* Skeletons */
+.ios-skel {
+  display: inline-block; background: linear-gradient(90deg, #e8e8ec 25%, #f4f4f6 50%, #e8e8ec 75%);
+  background-size: 200% 100%; animation: ios-shimmer 1.4s linear infinite;
+}
+@keyframes ios-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* Banners */
+.ios-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 600;
+  margin: 8px 0 2px;
+}
+.ios-banner.offline { background: rgba(226, 166, 59, 0.18); color: #8a5e0d; }
+.ios-banner.error { background: rgba(255, 59, 48, 0.12); color: #c0392b; }
+.ios-banner button {
+  border: 0; background: #c0392b; color: #fff; font: inherit; font-size: 12px; font-weight: 700;
+  border-radius: 8px; padding: 5px 12px; cursor: pointer; min-height: 30px;
+}
+
+/* Toast */
+.ios-toast-host { position: absolute; left: 0; right: 0; bottom: 96px; display: flex; justify-content: center; z-index: 60; pointer-events: none; }
+.ios-toast {
+  background: rgba(28, 28, 30, 0.92); color: #fff; font-size: 13px; font-weight: 600;
+  border-radius: 99px; padding: 9px 16px; max-width: 85%;
+  animation: ios-toast-in 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+@keyframes ios-toast-in { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ios-journey-dot.now { animation: none; }
+  .ios-skel { animation: none; }
+  .ios-toast { animation: none; }
+}
+
+/* Badges on photography need a solid backing to stay readable. */
+.ios-photocard-badge .ios-chip { background: rgba(255, 255, 255, 0.94); box-shadow: 0 1px 4px rgba(0,0,0,.25); }

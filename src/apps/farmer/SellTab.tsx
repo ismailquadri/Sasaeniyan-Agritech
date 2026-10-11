@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { latestIndex, type AppState } from '@/lib/useAppState'
+import { indexHistory, latestIndex } from '@/lib/useAppState'
 import { formatNaira } from '@/lib/money'
 import { priceBreakdown, type Grade } from '@/domain/pricing/pricing'
+import { CROPS, cropById } from '@/domain/crops'
 import { call } from '@/lib/api'
-import { NavLargeTitle, SectionHeader, InsetGroup, Row, PrimaryButton, SecondaryButton, Stepper, Sheet, EmptyState } from '@/components/ios/kit'
-import { cropGlyph, IconCheck, IconLeaf } from '@/components/ios/icons'
+import { NavLargeTitle, SectionHeader, InsetGroup, Row, PrimaryButton, SecondaryButton, Stepper, Sheet } from '@/components/ios/kit'
+import { PhotoCard, Chip, Sparkline, Delta } from '@/components/ios/upgrade'
+import { IconCheck } from '@/components/ios/icons'
+import type { FarmerTabProps } from './FarmerApp'
 
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
-export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: any; onDone: () => void }) {
+export function SellTab({ state, farmer, onToast, onDone }: FarmerTabProps & { onDone: () => void }) {
   const [crop, setCrop] = useState<string | null>(null)
   const [baskets, setBaskets] = useState(10)
   const [offerOpen, setOfferOpen] = useState(false)
@@ -18,17 +19,18 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
   const [sold, setSold] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Only contracts this farmer is enrolled in are sellable.
+  // Only contracts this farmer is enrolled on are sellable.
   const contract = crop
     ? state.contracts.find(
         (c) => c.crop === crop && c.status !== 'closed' && c.enrollments?.some((e: any) => e.farmerId === farmer.id),
       )
     : null
-  const index = crop ? latestIndex(state.marketIndex, crop) : null
-  const bd =
-    contract && index
-      ? priceBreakdown({ indexPrice: index.indexPrice, grade: contract.grade as Grade, bandMin: contract.bandMin, bandMax: contract.bandMax })
-      : null
+  const demandFor = (cropId: string) => state.contracts.find((c) => c.crop === cropId && c.status !== 'closed')
+  const idx = crop ? latestIndex(state.marketIndex, crop) : null
+  const history = crop ? indexHistory(state.marketIndex, crop) : []
+  const bd = contract && idx
+    ? priceBreakdown({ indexPrice: idx.indexPrice, grade: contract.grade as Grade, bandMin: contract.bandMin, bandMax: contract.bandMax })
+    : null
 
   async function accept() {
     if (!crop) return
@@ -36,17 +38,19 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
     try {
       const r = await call('/api/harvest', 'POST', { farmerId: farmer.id, crop, baskets })
       if (r.error) {
-        setError(String(r.error))
-      } else {
-        setOfferOpen(false)
-        setSold(true)
+        setError(typeof r.error === 'string' ? r.error : JSON.stringify(r.error))
+        return
       }
+      setOfferOpen(false)
+      setSold(true)
+      onToast('Harvest accepted — agent notified')
     } finally {
       setBusy(false)
     }
   }
 
   if (sold) {
+    const c = cropById(crop ?? '')
     return (
       <div className="ios-content" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div className="ios-empty">
@@ -54,7 +58,7 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
             <IconCheck width={30} height={30} />
           </span>
           <h3>Harvest accepted</h3>
-          <p>{baskets} baskets of {crop}. Your agent will come to collect. You&apos;ll get an SMS at every step.</p>
+          <p>{baskets} × {c.unitLabel} of {c.name.toLowerCase()}. Your agent will come to collect. You&apos;ll get an SMS at every step.</p>
         </div>
         <div style={{ display: 'flex' }}>
           <PrimaryButton onClick={() => { setSold(false); setCrop(null); onDone() }}>View wallet</PrimaryButton>
@@ -63,57 +67,70 @@ export function SellTab({ state, farmer, onDone }: { state: AppState; farmer: an
     )
   }
 
+  const selected = crop ? cropById(crop) : null
+
   return (
     <div className="ios-content">
       <NavLargeTitle title="Sell harvest" />
 
       <SectionHeader>1 · Choose crop</SectionHeader>
-      <InsetGroup>
-        {state.marketIndex.map((m) => {
-          const g = cropGlyph(m.crop)
-          const open = state.contracts.filter((c) => c.crop === m.crop && c.status !== 'closed')
-          const enrolled = open.some((c) => c.enrollments?.some((e: any) => e.farmerId === farmer.id))
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {CROPS.map((c) => {
+          const demand = demandFor(c.id)
+          const enrolled = demand?.enrollments?.some((e: any) => e.farmerId === farmer.id)
           return (
-            <Row
-              key={m.id}
-              icon={g.icon}
-              iconBg={g.color}
-              title={cap(m.crop)}
-              subtitle={enrolled ? 'buyer demand open' : open.length > 0 ? 'not enrolled — see your agent' : 'no open demand'}
-              selected={crop === m.crop}
-              onClick={() => setCrop(m.crop)}
+            <PhotoCard
+              key={c.id}
+              crop={c}
+              sub={demand ? (enrolled ? `${c.unitLabel} · demand open` : 'not enrolled — see your agent') : c.unitLabel}
+              badge={demand ? <Chip tone="gold">demand</Chip> : undefined}
+              onClick={() => { setCrop(c.id); setError(null) }}
+              selected={crop === c.id}
+              height={92}
             />
           )
         })}
-      </InsetGroup>
+      </div>
 
-      <SectionHeader>2 · How many baskets?</SectionHeader>
+      <SectionHeader>2 · How many {selected ? selected.unit + 's' : 'units'}?</SectionHeader>
       <InsetGroup>
-        <Row title="Baskets" trailing={<Stepper value={baskets} onChange={setBaskets} min={1} max={200} />} />
+        <Row title={selected ? selected.unitLabel : 'Quantity'} trailing={<Stepper value={baskets} onChange={setBaskets} min={1} max={200} />} />
       </InsetGroup>
 
-      <div style={{ marginTop: 24, display: 'flex' }}>
+      <div style={{ marginTop: 20, display: 'flex' }}>
         <PrimaryButton disabled={!crop || !bd} onClick={() => { setError(null); setOfferOpen(true) }}>
           {crop && !bd ? 'No open contract for this crop' : 'See your fair price'}
         </PrimaryButton>
       </div>
-      {!crop && (
-        <EmptyState icon={<IconLeaf width={36} height={36} />} title="Pick a crop to start" message="We only buy against real buyer demand — that's what guarantees your price." />
-      )}
 
       <Sheet open={offerOpen && !!bd} onClose={() => setOfferOpen(false)}>
-        {bd && index && (
+        {bd && idx && selected && (
           <div>
             <h2 className="ios-title2" style={{ margin: '4px 0 2px' }}>Your fair price</h2>
-            <div className="ios-caption1" style={{ marginBottom: 14 }}>{baskets} baskets · {cap(crop!)} · grade {bd.grade}</div>
+            <div className="ios-caption1" style={{ marginBottom: 10 }}>
+              {baskets} × {selected.unitLabel} · {selected.name} · grade {bd.grade}
+            </div>
+            {history.length > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 12, padding: '8px 12px', marginBottom: 10 }}>
+                <Sparkline points={history} width={120} height={28} label={`${selected.name} 7-day price trend`} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700 }}>7-day market trend</div>
+                  <Delta points={history} />
+                </div>
+              </div>
+            )}
             <InsetGroup footer="The farm-gate price is what the middleman offers in a glut. Your contract band protects you from it.">
               <Row title="Market index (farm-gate)" value={formatNaira(bd.index)} />
               <Row title={`Grade ${bd.grade} factor`} value={`×${bd.factor}`} />
               <Row title="Contract band" value={`${formatNaira(bd.band[0])}–${formatNaira(bd.band[1])}`} />
-              <Row title={<b>Per basket</b>} struckValue={formatNaira(index.indexPrice)} value={<b style={{ color: 'var(--ios-tint)' }}>{formatNaira(bd.price)}</b>} />
-              <Row title={<b>Total ({baskets} baskets)</b>} value={<b>{formatNaira(bd.price * baskets)}</b>} />
+              <Row
+                title={<b>Per {selected.unit}</b>}
+                struckValue={formatNaira(idx.indexPrice)}
+                value={<b style={{ color: 'var(--ios-tint)' }}>{formatNaira(bd.price)}</b>}
+              />
+              <Row title={<b>Total ({baskets})</b>} value={<b>{formatNaira(bd.price * baskets)}</b>} />
             </InsetGroup>
-            {error && <div style={{ color: '#c93400', fontSize: 13, marginTop: 10 }}>{error}</div>}
+            {error && <div style={{ color: '#c93400', fontSize: 13, marginTop: 10 }} role="alert">{error}</div>}
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <SecondaryButton onClick={() => setOfferOpen(false)}>Cancel</SecondaryButton>
               <PrimaryButton loading={busy} onClick={accept}>Accept offer</PrimaryButton>

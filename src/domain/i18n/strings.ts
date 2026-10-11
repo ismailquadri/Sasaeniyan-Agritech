@@ -17,6 +17,8 @@ const ha: Dict = {
   paymentReceipt:
     'An biya ka. Sayarwa: {saleValue}. Cire bashi: {advance}. Kudin aiki: {fees}. Nasan hannunka: {payout}.',
   invalid: 'Zabi ba daidai ba. Sake gwadawa.',
+  lotRejected: "An ki kwandon ka: {reason}. Jami'i zai sake duba. Ka tuntubi jami'inka.",
+  reviewRequested: '{name} ya nemi sake duba kwandon da aka ki.',
 }
 
 const pcm: Dict = {
@@ -31,6 +33,8 @@ const pcm: Dict = {
   paymentReceipt:
     'We don pay you. Sale: {saleValue}. Minus loan: {advance}. Charges: {fees}. Your money: {payout}.',
   invalid: 'Wrong choice. Try again.',
+  lotRejected: 'We no fit accept your basket: {reason}. Talk to your agent.',
+  reviewRequested: '{name} don ask make we check the rejected basket again.',
 }
 
 const en: Dict = {
@@ -45,6 +49,8 @@ const en: Dict = {
   paymentReceipt:
     'You have been paid. Sale: {saleValue}. Less advance: {advance}. Fees: {fees}. Your payout: {payout}.',
   invalid: 'Invalid choice. Please try again.',
+  lotRejected: 'Your lot was rejected: {reason}. Contact your agent to review.',
+  reviewRequested: '{name} requested a review of the rejected lot.',
 }
 
 const dicts: Record<Lang, Dict> = { ha, pcm, en }
