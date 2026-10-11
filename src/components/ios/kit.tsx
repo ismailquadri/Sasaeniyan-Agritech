@@ -36,6 +36,7 @@ export function Row({
   selected,
   onClick,
   trailing,
+  photo,
 }: {
   icon?: ReactNode
   iconBg?: string
@@ -47,13 +48,17 @@ export function Row({
   selected?: boolean
   onClick?: () => void
   trailing?: ReactNode
+  photo?: { src: string; alt: string; fallback?: string }
 }) {
   if (process.env.NODE_ENV !== 'production' && onClick && trailing)
     console.warn('Row: avoid onClick together with interactive trailing content (nested buttons)')
   const Tag: 'button' | 'div' = onClick ? 'button' : 'div'
   return (
     <Tag className="ios-row" {...(onClick ? { onClick, type: 'button' as const } : {})}>
-      {icon ? <span className="ios-iconsq" style={{ background: iconBg ?? 'var(--ios-tint)' }}>{icon}</span> : null}
+      {photo ? (
+        <img className="ios-rowphoto" src={photo.src} alt={photo.alt} width={32} height={32} loading="lazy" style={{ background: photo.fallback }} />
+      ) : null}
+      {!photo && icon ? <span className="ios-iconsq" style={{ background: iconBg ?? 'var(--ios-tint)' }}>{icon}</span> : null}
       <span className="ios-rowbody">
         <span className="ios-rowtitle">{title}</span>
         {subtitle ? <span className="ios-rowsub" style={{ display: 'block' }}>{subtitle}</span> : null}

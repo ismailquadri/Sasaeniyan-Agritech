@@ -9,11 +9,14 @@ export interface AppEvent {
 
 /**
  * Subscribe to the server event stream. Calls onEvent for every event.
- * Falls back to polling /api/state (via onEvent({type:'POLL'})) if SSE errors.
+ * Falls back to polling (via onEvent({type:'POLL'})) if SSE errors.
+ * onConnectionChange reports SSE health (true = live stream open).
  */
-export function useEvents(onEvent: (e: AppEvent) => void) {
+export function useEvents(onEvent: (e: AppEvent) => void, onConnectionChange?: (ok: boolean) => void) {
   const cb = useRef(onEvent)
   cb.current = onEvent
+  const conn = useRef(onConnectionChange)
+  conn.current = onConnectionChange
 
   useEffect(() => {
     let es: EventSource | null = null
@@ -26,7 +29,9 @@ export function useEvents(onEvent: (e: AppEvent) => void) {
 
     try {
       es = new EventSource('/api/events')
+      es.onopen = () => conn.current?.(true)
       es.onmessage = (ev) => {
+        conn.current?.(true)
         try {
           cb.current(JSON.parse(ev.data) as AppEvent)
         } catch {
@@ -35,9 +40,11 @@ export function useEvents(onEvent: (e: AppEvent) => void) {
       }
       es.onerror = () => {
         // EventSource auto-reconnects; add polling as a safety net.
+        conn.current?.(false)
         startPolling()
       }
     } catch {
+      conn.current?.(false)
       startPolling()
     }
 
