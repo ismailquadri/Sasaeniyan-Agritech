@@ -14,9 +14,12 @@ export interface AppEvent {
  */
 export function useEvents(onEvent: (e: AppEvent) => void, onConnectionChange?: (ok: boolean) => void) {
   const cb = useRef(onEvent)
-  cb.current = onEvent
   const conn = useRef(onConnectionChange)
-  conn.current = onConnectionChange
+  // Keep latest callbacks without re-subscribing (assigned in an effect, not render).
+  useEffect(() => {
+    cb.current = onEvent
+    conn.current = onConnectionChange
+  })
 
   useEffect(() => {
     let es: EventSource | null = null

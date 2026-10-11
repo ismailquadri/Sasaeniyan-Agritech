@@ -28,6 +28,7 @@ export function HomeTab({
   const level = creditLevel(farmer.creditScore ?? 0)
 
   const hasUnread = state.messages.some(
+    // eslint-disable-next-line react-hooks/purity -- display-only freshness dot; clock read is intentional
     (m) => m.toPhone === farmer.phone && Date.now() - new Date(m.createdAt).getTime() < 86_400_000,
   )
 

@@ -15,6 +15,7 @@ export function WalletTab({ state, agent, online, status, onRetry }: AgentTabPro
   const wallet = state.wallets.find((w) => w.ownerId === agent.id)
   const ledger: any[] = wallet?.ledger ?? []
 
+  // eslint-disable-next-line react-hooks/purity -- display-only rolling-week summary; clock read is intentional
   const weekAgo = Date.now() - 7 * 86_400_000
   const thisWeek = ledger.filter((e) => e.type === 'commission' && new Date(e.createdAt).getTime() > weekAgo).reduce((s, e) => s + e.amount, 0)
   const allTime = ledger.filter((e) => e.type === 'commission').reduce((s, e) => s + e.amount, 0)
