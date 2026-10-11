@@ -2,7 +2,8 @@ import { z } from 'zod'
 import { db } from '@/lib/db'
 import { maxAdvance } from '@/domain/finance/finance'
 import { adjust } from '@/domain/wallet/wallet'
-import { ADVANCE_RATE, PLATFORM_WALLET_ID } from '@/domain/config'
+import { PLATFORM_WALLET_ID } from '@/domain/config'
+import { advanceRateFor } from '@/domain/credit'
 import { publish } from '@/realtime/hub'
 
 export const dynamic = 'force-dynamic'
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
       const amount = maxAdvance({
         plannedVolume: b.plannedVolume,
         bandMin: contract.bandMin,
-        rate: ADVANCE_RATE,
+        rate: advanceRateFor(farmer.creditScore), // credit flywheel: L1 40% / L2 50% / L3 60%
       })
       advance = await tx.advance.create({ data: { enrollmentId: enrollment.id, amount } })
       await adjust(tx, farmer.walletId, amount, 'advance', enrollment.id)
